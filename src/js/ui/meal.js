@@ -397,10 +397,11 @@ export default class Meal {
         let todayDate = new Date();
         todayDate = todayDate.toISOString().split("T")[0];
         const todayObject = JSON.parse(localStorage.getItem(todayDate));
-        todayObject.calories += productObject.calories;
-        todayObject.fat += productObject.fat;
-        todayObject.protein += productObject.protein;
-        todayObject.carbs += productObject.carbs;
+        todayObject.meals.push(mealObject);
+        todayObject.calories += mealObject.calories;
+        todayObject.fat += mealObject.fat;
+        todayObject.protein += mealObject.protein;
+        todayObject.carbs += mealObject.carbs;
         localStorage.setItem(todayDate, JSON.stringify(todayObject));
         document.getElementById("cal-count").innerHTML =
             `${todayObject.calories} kcal`;
