@@ -327,7 +327,7 @@ export default class Meal {
         });
         const decrease = this.modal.querySelector("#decrease-servings");
         decrease.addEventListener("click", () => {
-            servingArea.stepdown();
+            servingArea.stepDown();
         });
 
         // give log button magggiiiccc
