@@ -33,7 +33,6 @@ sectionsButtons.forEach((button) => {
 function toggleSidebar() {
     sidebar.classList.toggle("open");
     sidebarOverlay.classList.toggle("active");
-    document.body.style.overflow = "hidden";
 }
 
 // apply it to the buttons
