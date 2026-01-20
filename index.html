@@ -25,7 +25,7 @@
 <body class="bg-gray-50 font-sans">
     <!-- Loading Overlay -->
     <div id="app-loading-overlay"
-        class="loading fixed inset-0 bg-white z-[100] flex items-center justify-center transition-opacity duration-500">
+        class="fixed inset-0 bg-white z-[100] flex items-center justify-center transition-opacity duration-500">
         <div class="text-center">
             <div class="relative w-20 h-20 mx-auto mb-6">
                 <div class="absolute inset-0 rounded-xl bg-linear-to-br from-emerald-400 to-teal-600 animate-pulse">
@@ -948,47 +948,67 @@
                     </h3>
 
                     <!-- Progress Bars -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                        <!-- Calories Progress -->
-                        <div class="bg-emerald-50 rounded-xl p-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6" id="nut-progress-bar">
+
+                        <div class="bg-gray-50 rounded-xl p-4">
                             <div class="flex items-center justify-between mb-2">
-                                <span class="text-sm font-semibold text-gray-700">Calories</span>
-                                <span class="text-sm text-gray-500">0 / 2000 kcal</span>
+                                <span class="text-sm font-medium text-gray-700">Calories</span>
+                                <span class="text-xs text-emerald-600">0%</span>
                             </div>
-                            <div class="w-full bg-gray-200 rounded-full h-2.5">
-                                <div class="bg-emerald-500 h-2.5 rounded-full" style="width: 0%"></div>
+                            <div class="w-full bg-gray-200 rounded-full h-2.5 mb-2">
+                                <div class="h-2.5 rounded-full bg-emerald-500" style="width: 0%"></div>
+                            </div>
+                            <div class="flex items-center justify-between text-xs">
+                                <span class="font-bold text-emerald-600">0 kcal</span>
+                                <span class="text-gray-400">/ 2000 kcal</span>
                             </div>
                         </div>
-                        <!-- Protein Progress -->
-                        <div class="bg-blue-50 rounded-xl p-4">
+
+
+                        <div class="bg-gray-50 rounded-xl p-4">
                             <div class="flex items-center justify-between mb-2">
-                                <span class="text-sm font-semibold text-gray-700">Protein</span>
-                                <span class="text-sm text-gray-500">0 / 50 g</span>
+                                <span class="text-sm font-medium text-gray-700">Protein</span>
+                                <span class="text-xs text-blue-600">0%</span>
                             </div>
-                            <div class="w-full bg-gray-200 rounded-full h-2.5">
-                                <div class="bg-blue-500 h-2.5 rounded-full" style="width: 0%"></div>
+                            <div class="w-full bg-gray-200 rounded-full h-2.5 mb-2">
+                                <div class="h-2.5 rounded-full bg-blue-500" style="width: 0%"></div>
+                            </div>
+                            <div class="flex items-center justify-between text-xs">
+                                <span class="font-bold text-blue-600">0 g</span>
+                                <span class="text-gray-400">/ 50 g</span>
                             </div>
                         </div>
-                        <!-- Carbs Progress -->
-                        <div class="bg-amber-50 rounded-xl p-4">
+
+
+                        <div class="bg-gray-50 rounded-xl p-4">
                             <div class="flex items-center justify-between mb-2">
-                                <span class="text-sm font-semibold text-gray-700">Carbs</span>
-                                <span class="text-sm text-gray-500">0 / 250 g</span>
+                                <span class="text-sm font-medium text-gray-700">Carbs</span>
+                                <span class="text-xs text-amber-600">0%</span>
                             </div>
-                            <div class="w-full bg-gray-200 rounded-full h-2.5">
-                                <div class="bg-amber-500 h-2.5 rounded-full" style="width: 0%"></div>
+                            <div class="w-full bg-gray-200 rounded-full h-2.5 mb-2">
+                                <div class="h-2.5 rounded-full bg-amber-500" style="width: 0%"></div>
+                            </div>
+                            <div class="flex items-center justify-between text-xs">
+                                <span class="font-bold text-amber-600">0 g</span>
+                                <span class="text-gray-400">/ 250 g</span>
                             </div>
                         </div>
-                        <!-- Fat Progress -->
-                        <div class="bg-purple-50 rounded-xl p-4">
+
+
+                        <div class="bg-gray-50 rounded-xl p-4">
                             <div class="flex items-center justify-between mb-2">
-                                <span class="text-sm font-semibold text-gray-700">Fat</span>
-                                <span class="text-sm text-gray-500">0 / 65 g</span>
+                                <span class="text-sm font-medium text-gray-700">Fat</span>
+                                <span class="text-xs text-purple-600">0%</span>
                             </div>
-                            <div class="w-full bg-gray-200 rounded-full h-2.5">
-                                <div class="bg-purple-500 h-2.5 rounded-full" style="width: 0%"></div>
+                            <div class="w-full bg-gray-200 rounded-full h-2.5 mb-2">
+                                <div class="h-2.5 rounded-full bg-purple-500" style="width: 0%"></div>
+                            </div>
+                            <div class="flex items-center justify-between text-xs">
+                                <span class="font-bold text-purple-600">0 g</span>
+                                <span class="text-gray-400">/ 65 g</span>
                             </div>
                         </div>
+
                     </div>
 
                     <!-- Logged Items -->
@@ -1011,6 +1031,32 @@
                                 <p class="text-sm">
                                     Add meals from the Meals page or scan products
                                 </p>
+                                <div class="flex justify-center gap-3">
+                                    <a href="#"
+                                        class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-all"
+                                        id="to-meals">
+                                        <i data-fa-i2svg=""><svg class="svg-inline--fa fa-plus" data-prefix="fas"
+                                                data-icon="plus" role="img" viewBox="0 0 448 512" aria-hidden="true"
+                                                data-fa-i2svg="">
+                                                <path fill="currentColor"
+                                                    d="M256 64c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 160-160 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l160 0 0 160c0 17.7 14.3 32 32 32s32-14.3 32-32l0-160 160 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-160 0 0-160z">
+                                                </path>
+                                            </svg></i>
+                                        Browse Recipes
+                                    </a>
+                                    <a href="#"
+                                        class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all"
+                                        id="to-scan-product">
+                                        <i data-fa-i2svg=""><svg class="svg-inline--fa fa-barcode" data-prefix="fas"
+                                                data-icon="barcode" role="img" viewBox="0 0 448 512" aria-hidden="true"
+                                                data-fa-i2svg="">
+                                                <path fill="currentColor"
+                                                    d="M32 32C14.3 32 0 46.3 0 64L0 448c0 17.7 14.3 32 32 32s32-14.3 32-32L64 64c0-17.7-14.3-32-32-32zm88 0c-13.3 0-24 10.7-24 24l0 400c0 13.3 10.7 24 24 24s24-10.7 24-24l0-400c0-13.3-10.7-24-24-24zm72 32l0 384c0 17.7 14.3 32 32 32s32-14.3 32-32l0-384c0-17.7-14.3-32-32-32s-32 14.3-32 32zm208-8l0 400c0 13.3 10.7 24 24 24s24-10.7 24-24l0-400c0-13.3-10.7-24-24-24s-24 10.7-24 24zm-96 0l0 400c0 13.3 10.7 24 24 24s24-10.7 24-24l0-400c0-13.3-10.7-24-24-24s-24 10.7-24 24z">
+                                                </path>
+                                            </svg></i>
+                                        Scan Product
+                                    </a>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1083,7 +1129,7 @@
                             </div>
                             <div>
                                 <p class="text-sm text-gray-500">Days On Goal</p>
-                                <p class="text-xl font-bold text-gray-900">0 / 7</p>
+                                <p class="text-xl font-bold text-gray-900 days-on-goal-counter">0 / 7</p>
                             </div>
                         </div>
                     </div>

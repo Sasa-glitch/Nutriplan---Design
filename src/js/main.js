@@ -4,7 +4,6 @@
  * This is the main entry point for the application.
  * Import your modules and initialize the app here.
  */
-// my api key nQ6UIrYtBiWRaEESwWqWyISPBIxpVxvIEyUKFks1
 "use strict";
 import Meal from "./ui/meal.js";
 import Menu from "./ui/menu.js";
@@ -417,6 +416,8 @@ productCategoryButtons.forEach((button) => {
 
 // update today's date
 // and generate localstorage with all the last 7 days
+let dateKeys = [];
+
 function startDateAndKeys() {
     const date = new Date();
     // date.setDate(date.getDate() - 20);
@@ -425,8 +426,7 @@ function startDateAndKeys() {
         day: "numeric",
         year: "numeric",
     })}`;
-
-    const dateKeys = [];
+    dateKeys = [];
     for (let i = 0; i < 7; i++) {
         let newDate = new Date();
         newDate.setDate(date.getDate() - i);
@@ -459,11 +459,10 @@ function populateWeekCalendar() {
     const today = new Date();
     const container = document.getElementById("weekly-chart");
 
-    // Generate HTML for 7 days (today + 6 previous days)
+    // Html for 7 days
     const daysHTML = [];
 
     for (let i = 6; i >= 0; i--) {
-        // Start from oldest to newest
         const date = new Date(today);
         date.setDate(today.getDate() - i);
 
@@ -497,17 +496,8 @@ function populateWeekCalendar() {
     container.classList = `grid grid-cols-7 gap-2`;
 }
 
-// aiii
-let logData = {
-    products: [],
-    meals: [],
-};
-function generateDailyLogHTML() {
-    const today = new Date().toISOString().split("T")[0];
-    logData = JSON.parse(localStorage.getItem(today)) || {
-        products: [],
-        meals: [],
-    };
+function generateDailyLogHTML(logData) {
+    console.log(logData);
     if (logData.products.length === 0 && logData.meals.length === 0) {
         return 0;
     }
@@ -534,7 +524,7 @@ function generateDailyLogHTML() {
     };
 
     // Build HTML for each item
-    const cards = items.map((item, index) => {
+    const cards = items.map((item) => {
         const timeStr = formatTime(item.hour, item.minute);
         const calories = Math.round(item.calories); // or total if per-serving
         const protein = item.protein?.toFixed(1) || "0";
@@ -543,12 +533,12 @@ function generateDailyLogHTML() {
 
         if (item.type === "meal") {
             // Meal card
-            const servings = item.servings || 1;
+            const servings = item.serving || 1;
             const imageSrc =
                 item.pictureSrc ||
                 "https://www.themealdb.com/images/media/meals/placeholder.jpg"; // fallback
             return `
-<div class="flex items-center justify-between bg-gray-50 rounded-xl p-4 hover:bg-gray-100 transition-all" data-id="${item.id}">
+<div class="flex items-center justify-between bg-gray-50 rounded-xl p-4 hover:bg-gray-100 transition-all item-card" data-id="${item.id}">
     <div class="flex items-center gap-4">
         <img src="${imageSrc}" alt="${item.name}" class="w-14 h-14 rounded-xl object-cover">
         <div>
@@ -569,7 +559,7 @@ function generateDailyLogHTML() {
             <span class="px-2 py-1 bg-amber-50 rounded">${carbs}g C</span>
             <span class="px-2 py-1 bg-purple-50 rounded">${fat}g F</span>
         </div>
-        <button class="remove-foodlog-item text-gray-400 hover:text-red-500 transition-all p-2" data-index="${index}" data-type="meal">
+        <button class="remove-foodlog-item text-gray-400 hover:text-red-500 transition-all p-2" onclick='deleteItemById(${item.id},"meals")'>
             <i class="fa-solid fa-trash-can"></i>
         </button>
     </div>
@@ -578,7 +568,7 @@ function generateDailyLogHTML() {
             // Product card
             const brand = item.brand || "Unknown";
             return `
-<div class="flex items-center justify-between bg-gray-50 rounded-xl p-4 hover:bg-gray-100 transition-all">
+<div class="flex items-center justify-between bg-gray-50 rounded-xl p-4 hover:bg-gray-100 transition-all item-card" data-id=${item.id}>
     <div class="flex items-center gap-4">
         <div class="w-14 h-14 bg-blue-100 rounded-xl flex items-center justify-center">
             <i class="text-blue-600 text-xl fa-solid fa-box"></i>
@@ -601,7 +591,7 @@ function generateDailyLogHTML() {
             <span class="px-2 py-1 bg-amber-50 rounded">${carbs}g C</span>
             <span class="px-2 py-1 bg-purple-50 rounded">${fat}g F</span>
         </div>
-        <button class="remove-foodlog-item text-gray-400 hover:text-red-500 transition-all p-2" data-index="${index}" data-type="product">
+        <button class="remove-foodlog-item text-gray-400 hover:text-red-500 transition-all p-2" onclick='deleteItemById(${item.id},"products")'>
             <i class="fa-solid fa-trash-can"></i>
         </button>
     </div>
@@ -611,36 +601,187 @@ function generateDailyLogHTML() {
 
     return cards.join(""); // Concatenate all cards into one string
 }
+function generateNutritionStats(todayObject) {
+    // maximum goa;s
+    const goals = {
+        calories: 2000,
+        protein: 50,
+        carbs: 250,
+        fat: 65,
+    };
+    const current = {
+        calories: todayObject.calories || 0,
+        protein: todayObject.protein || 0,
+        carbs: todayObject.carbs || 0,
+        fat: todayObject.fat || 0,
+    };
+
+    // get precentages
+    const percentages = {
+        calories: Math.min(
+            Math.round((current.calories / goals.calories) * 100),
+            100,
+        ),
+        protein: Math.min(
+            Math.round((current.protein / goals.protein) * 100),
+            100,
+        ),
+        carbs: Math.min(Math.round((current.carbs / goals.carbs) * 100), 100),
+        fat: Math.min(Math.round((current.fat / goals.fat) * 100), 100),
+    };
+    const getColorClass = (percentage, nutrient) => {
+        if (percentage === 100) return "red";
+        const colors = {
+            calories: "emerald",
+            protein: "blue",
+            carbs: "amber",
+            fat: "purple",
+        };
+
+        return colors[nutrient];
+    };
+
+    const createStatCard = (nutrient, label) => {
+        const percentage = percentages[nutrient];
+        const currentValue =
+            nutrient === "calories"
+                ? Math.round(current[nutrient])
+                : Math.round(current[nutrient]);
+        const goalValue = goals[nutrient];
+        const color = getColorClass(percentage, nutrient);
+        const displayPercentage = Math.min(percentage, 100); // Cap at 100% for progress bar
+        const unit = nutrient === "calories" ? "kcal" : "g";
+
+        return `
+            <div class="bg-gray-50 rounded-xl p-4">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-sm font-medium text-gray-700">${label}</span>
+                    <span class="text-xs text-${color}-600">${percentage}%</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2.5 mb-2">
+                    <div class="h-2.5 rounded-full bg-${color}-500" style="width: ${displayPercentage}%"></div>
+                </div>
+                <div class="flex items-center justify-between text-xs">
+                    <span class="font-bold text-${color}-600">${currentValue} ${unit}</span>
+                    <span class="text-gray-400">/ ${goalValue} ${unit}</span>
+                </div>
+            </div>
+        `;
+    };
+
+    // Generate the complete markup
+    return `
+            ${createStatCard("calories", "Calories")}
+            ${createStatCard("protein", "Protein")}
+            ${createStatCard("carbs", "Carbs")}
+            ${createStatCard("fat", "Fat")}
+    `;
+}
 
 function updateUi() {
-    const htmlMarkup = generateDailyLogHTML();
-    if (htmlMarkup === 0) {
+    let itemsNumber = 0;
+    let totalCal = 0;
+    let daysOngoal = 0;
+    let todayObject;
+    dateKeys.forEach((key, i) => {
+        const dayObject = JSON.parse(localStorage.getItem(key));
+        if (i === 0) {
+            todayObject = dayObject;
+        }
+        itemsNumber += dayObject.meals?.length + dayObject.products?.length;
+        totalCal += dayObject.calories;
+        if (
+            dayObject.calories >= 2000 &&
+            dayObject.protein >= 50 &&
+            dayObject.carbs >= 250 &&
+            dayObject.fat >= 65
+        ) {
+            daysOngoal++;
+        }
+    });
+    console.log("today's", todayObject);
+    document.getElementById("logged-items-count").innerHTML =
+        `Logged Items (${itemsNumber})
+        `;
+    document.getElementById("items-count").innerHTML = `${itemsNumber} items`;
+    document.getElementById("cal-count").innerHTML =
+        `${(totalCal / 7).toFixed(0)} kcal`;
+    document.querySelector(".days-on-goal-counter").innerHTML =
+        `${daysOngoal} / 7`;
+    populateWeekCalendar();
+    const htmlMarkupLog = generateDailyLogHTML(todayObject);
+    const logContainer = document.getElementById("logged-items-list");
+    if (htmlMarkupLog === 0) {
         document.getElementById("clear-foodlog").style.display = "none";
-    }
-    document.getElementById("clear-foodlog").style.display = "block";
-
-    const container = document.getElementById("logged-items-list");
-    if (htmlMarkup) {
-        container.innerHTML = htmlMarkup;
-    } else {
-        container.innerHTML = `<div class="text-center py-8 text-gray-500">
+        logContainer.innerHTML = `<div class="text-center py-8 text-gray-500">
                                 <i class="mb-3 text-4xl text-gray-300" data-fa-i2svg=""><svg class="svg-inline--fa fa-utensils" data-prefix="fas" data-icon="utensils" role="img" viewBox="0 0 512 512" aria-hidden="true" data-fa-i2svg=""><path fill="currentColor" d="M63.9 14.4C63.1 6.2 56.2 0 48 0s-15.1 6.2-16 14.3L17.9 149.7c-1.3 6-1.9 12.1-1.9 18.2 0 45.9 35.1 83.6 80 87.7L96 480c0 17.7 14.3 32 32 32s32-14.3 32-32l0-224.4c44.9-4.1 80-41.8 80-87.7 0-6.1-.6-12.2-1.9-18.2L223.9 14.3C223.1 6.2 216.2 0 208 0s-15.1 6.2-15.9 14.4L178.5 149.9c-.6 5.7-5.4 10.1-11.1 10.1-5.8 0-10.6-4.4-11.2-10.2L143.9 14.6C143.2 6.3 136.3 0 128 0s-15.2 6.3-15.9 14.6L99.8 149.8c-.5 5.8-5.4 10.2-11.2 10.2-5.8 0-10.6-4.4-11.1-10.1L63.9 14.4zM448 0C432 0 320 32 320 176l0 112c0 35.3 28.7 64 64 64l32 0 0 128c0 17.7 14.3 32 32 32s32-14.3 32-32l0-448c0-17.7-14.3-32-32-32z"></path></svg></i>
                                 <p class="font-medium">No meals logged today</p>
                                 <p class="text-sm">
                                     Add meals from the Meals page or scan products
                                 </p>
+                                <div class="flex justify-center gap-3">
+                        <a href="" class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-all">
+                            <i data-fa-i2svg=""><svg class="svg-inline--fa fa-plus" data-prefix="fas" data-icon="plus" role="img" viewBox="0 0 448 512" aria-hidden="true" data-fa-i2svg=""><path fill="currentColor" d="M256 64c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 160-160 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l160 0 0 160c0 17.7 14.3 32 32 32s32-14.3 32-32l0-160 160 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-160 0 0-160z"></path></svg></i>
+                            Browse Recipes
+                        </a>
+                        <a href="" class="nav-link inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all">
+                            <i data-fa-i2svg=""><svg class="svg-inline--fa fa-barcode" data-prefix="fas" data-icon="barcode" role="img" viewBox="0 0 448 512" aria-hidden="true" data-fa-i2svg=""><path fill="currentColor" d="M32 32C14.3 32 0 46.3 0 64L0 448c0 17.7 14.3 32 32 32s32-14.3 32-32L64 64c0-17.7-14.3-32-32-32zm88 0c-13.3 0-24 10.7-24 24l0 400c0 13.3 10.7 24 24 24s24-10.7 24-24l0-400c0-13.3-10.7-24-24-24zm72 32l0 384c0 17.7 14.3 32 32 32s32-14.3 32-32l0-384c0-17.7-14.3-32-32-32s-32 14.3-32 32zm208-8l0 400c0 13.3 10.7 24 24 24s24-10.7 24-24l0-400c0-13.3-10.7-24-24-24s-24 10.7-24 24zm-96 0l0 400c0 13.3 10.7 24 24 24s24-10.7 24-24l0-400c0-13.3-10.7-24-24-24s-24 10.7-24 24z"></path></svg></i>
+                            Scan Product
+                        </a>
+                    </div>
                             </div>`;
+    } else {
+        document.getElementById("clear-foodlog").style.display = "block";
+        logContainer.innerHTML = htmlMarkupLog;
     }
-    const itemsNumber = logData.meals.length + logData.products.length;
-    document.getElementById("logged-items-count").innerHTML =
-        `Logged Items (${itemsNumber})
-        `;
-    document.getElementById("items-count").innerHTML = `${itemsNumber} items`;
-    let todayDate = new Date();
-    todayDate = todayDate.toISOString().split("T")[0];
-    const todayObject = JSON.parse(localStorage.getItem(todayDate));
-    document.getElementById("cal-count").innerHTML =
-        `${todayObject.calories} kcal`;
+    const htmlMarkupNut = generateNutritionStats(todayObject);
+    const nutContainer = document.getElementById("nut-progress-bar");
+    nutContainer.innerHTML = htmlMarkupNut;
 }
 updateUi();
-// give window event listeners when local storage updates
+// when the foodlog section icon is press ui function fires
+document
+    .querySelector(`a[data-info="foodlog-section"]`)
+    .addEventListener("click", () => {
+        console.log("click");
+        updateUi();
+    });
+
+// create delete and delete all function
+window.deleteItemById = function (id, type) {
+    const today = new Date().toISOString().split("T")[0];
+    const todayObject = JSON.parse(localStorage.getItem(today));
+    let productObject;
+    todayObject[type] = todayObject[type].filter((item) => {
+        if (item.id === id) {
+            productObject = item;
+        }
+        return item.id !== id;
+    });
+
+    console.log(productObject);
+    todayObject.calories -= productObject.calories;
+    todayObject.fat -= productObject.fat;
+    todayObject.protein -= productObject.protein;
+    todayObject.carbs -= productObject.carbs;
+    localStorage.setItem(today, JSON.stringify(todayObject));
+    updateUi();
+};
+
+function deleteAllItems() {
+    const today = new Date().toISOString().split("T")[0];
+    let todayObject = JSON.parse(localStorage.getItem(today));
+    todayObject = {
+        calories: 0,
+        fat: 0,
+        protein: 0,
+        carbs: 0,
+        meals: [],
+        products: [],
+    };
+    localStorage.setItem(today, JSON.stringify(todayObject));
+    updateUi();
+}
+document
+    .getElementById("clear-foodlog")
+    .addEventListener("click", deleteAllItems);

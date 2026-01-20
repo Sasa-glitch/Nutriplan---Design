@@ -5,6 +5,13 @@ const headerMenuButton = document.getElementById("header-menu-btn");
 const sidebarCloseButton = document.getElementById("sidebar-close-btn");
 const sidebar = document.getElementById("sidebar");
 const sidebarOverlay = document.getElementById("sidebar-overlay");
+// applodadin overlay
+const appLoadingOverlay = document.getElementById("app-loading-overlay");
+
+// hide loading when page loads
+setTimeout(() => {
+    appLoadingOverlay.classList.add("hidden");
+}, 500);
 
 // giving sections buttons some magic
 sectionsButtons.forEach((button) => {

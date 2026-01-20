@@ -394,152 +394,15 @@ export default class Meal {
     }
     updateLocalStorage() {
         const mealObject = this.returnMealObject();
+        console.log(mealObject);
         let todayDate = new Date();
         todayDate = todayDate.toISOString().split("T")[0];
         const todayObject = JSON.parse(localStorage.getItem(todayDate));
-        todayObject.meals.push(mealObject);
         todayObject.calories += mealObject.calories;
         todayObject.fat += mealObject.fat;
         todayObject.protein += mealObject.protein;
         todayObject.carbs += mealObject.carbs;
+        todayObject.meals.push(mealObject);
         localStorage.setItem(todayDate, JSON.stringify(todayObject));
-        document.getElementById("cal-count").innerHTML =
-            `${todayObject.calories} kcal`;
-        this.updateUi();
-    }
-    // ai generated html markup
-
-    generateDailyLogHTML() {
-        const today = new Date().toISOString().split("T")[0];
-        this.logData = JSON.parse(localStorage.getItem(today)) || {
-            products: [],
-            meals: [],
-        };
-        if (
-            this.logData.products.length === 0 &&
-            this.logData.meals.length === 0
-        ) {
-            return 0;
-        }
-        // Combine all items with type for easy handling
-        const items = [
-            ...this.logData.products.map((p) => ({ ...p, type: "product" })),
-            ...this.logData.meals.map((m) => ({ ...m, type: "meal" })), // adjust if your meals are stored differently
-        ];
-
-        // Sort by time (earliest first)
-        items.sort((a, b) => {
-            const timeA = a.hour * 60 + a.minute;
-            const timeB = b.hour * 60 + b.minute;
-            return timeA - timeB;
-        });
-
-        // Helper to format time like "11:43 AM"
-        const formatTime = (hour, minute) => {
-            const ampm = hour >= 12 ? "PM" : "AM";
-            const h = hour % 12 || 12;
-            const m = minute.toString().padStart(2, "0");
-            return `${h}:${m} ${ampm}`;
-        };
-
-        // Build HTML for each item
-        const cards = items.map((item, index) => {
-            const timeStr = formatTime(item.hour, item.minute);
-            const calories = Math.round(item.calories); // or total if per-serving
-            const protein = item.protein?.toFixed(1) || "0";
-            const carbs = item.carbs?.toFixed(1) || "0";
-            const fat = item.fat?.toFixed(1) || "0";
-
-            if (item.type === "meal") {
-                // Meal card
-                const servings = item.servings || 1;
-                const imageSrc =
-                    item.pictureSrc ||
-                    "https://www.themealdb.com/images/media/meals/placeholder.jpg"; // fallback
-                return `
-<div class="flex items-center justify-between bg-gray-50 rounded-xl p-4 hover:bg-gray-100 transition-all">
-    <div class="flex items-center gap-4">
-        <img src="${imageSrc}" alt="${item.name}" class="w-14 h-14 rounded-xl object-cover">
-        <div>
-            <p class="font-semibold text-gray-900">${item.name}</p>
-            <p class="text-sm text-gray-500">
-                ${servings} serving<span class="mx-1">•</span><span class="text-emerald-600">Recipe</span>
-            </p>
-            <p class="text-xs text-gray-400 mt-1">${timeStr}</p>
-        </div>
-    </div>
-    <div class="flex items-center gap-4">
-        <div class="text-right">
-            <p class="text-lg font-bold text-emerald-600">${calories}</p>
-            <p class="text-xs text-gray-500">kcal</p>
-        </div>
-        <div class="hidden md:flex gap-2 text-xs text-gray-500">
-            <span class="px-2 py-1 bg-blue-50 rounded">${protein}g P</span>
-            <span class="px-2 py-1 bg-amber-50 rounded">${carbs}g C</span>
-            <span class="px-2 py-1 bg-purple-50 rounded">${fat}g F</span>
-        </div>
-        <button class="remove-foodlog-item text-gray-400 hover:text-red-500 transition-all p-2" data-index="${index}" data-type="meal">
-            <i class="fa-solid fa-trash-can"></i>
-        </button>
-    </div>
-</div>`;
-            } else {
-                // Product card
-                const brand = item.brand || "Unknown";
-                return `
-<div class="flex items-center justify-between bg-gray-50 rounded-xl p-4 hover:bg-gray-100 transition-all">
-    <div class="flex items-center gap-4">
-        <div class="w-14 h-14 bg-blue-100 rounded-xl flex items-center justify-center">
-            <i class="text-blue-600 text-xl fa-solid fa-box"></i>
-        </div>
-        <div>
-            <p class="font-semibold text-gray-900">${item.name}</p>
-            <p class="text-sm text-gray-500">
-                ${brand}<span class="mx-1">•</span><span class="text-blue-600">Product</span>
-            </p>
-            <p class="text-xs text-gray-400 mt-1">${timeStr}</p>
-        </div>
-    </div>
-    <div class="flex items-center gap-4">
-        <div class="text-right">
-            <p class="text-lg font-bold text-emerald-600">${calories}</p>
-            <p class="text-xs text-gray-500">kcal</p>
-        </div>
-        <div class="hidden md:flex gap-2 text-xs text-gray-500">
-            <span class="px-2 py-1 bg-blue-50 rounded">${protein}g P</span>
-            <span class="px-2 py-1 bg-amber-50 rounded">${carbs}g C</span>
-            <span class="px-2 py-1 bg-purple-50 rounded">${fat}g F</span>
-        </div>
-        <button class="remove-foodlog-item text-gray-400 hover:text-red-500 transition-all p-2" data-index="${index}" data-type="product">
-            <i class="fa-solid fa-trash-can"></i>
-        </button>
-    </div>
-</div>`;
-            }
-        });
-
-        return cards.join(""); // Concatenate all cards into one string
-    }
-    updateUi() {
-        const htmlMarkup = this.generateDailyLogHTML();
-        const container = document.getElementById("logged-items-list");
-        if (htmlMarkup) {
-            container.innerHTML = htmlMarkup;
-        } else {
-            container.innerHTML = `<div class="text-center py-8 text-gray-500">
-                                <i class="mb-3 text-4xl text-gray-300" data-fa-i2svg=""><svg class="svg-inline--fa fa-utensils" data-prefix="fas" data-icon="utensils" role="img" viewBox="0 0 512 512" aria-hidden="true" data-fa-i2svg=""><path fill="currentColor" d="M63.9 14.4C63.1 6.2 56.2 0 48 0s-15.1 6.2-16 14.3L17.9 149.7c-1.3 6-1.9 12.1-1.9 18.2 0 45.9 35.1 83.6 80 87.7L96 480c0 17.7 14.3 32 32 32s32-14.3 32-32l0-224.4c44.9-4.1 80-41.8 80-87.7 0-6.1-.6-12.2-1.9-18.2L223.9 14.3C223.1 6.2 216.2 0 208 0s-15.1 6.2-15.9 14.4L178.5 149.9c-.6 5.7-5.4 10.1-11.1 10.1-5.8 0-10.6-4.4-11.2-10.2L143.9 14.6C143.2 6.3 136.3 0 128 0s-15.2 6.3-15.9 14.6L99.8 149.8c-.5 5.8-5.4 10.2-11.2 10.2-5.8 0-10.6-4.4-11.1-10.1L63.9 14.4zM448 0C432 0 320 32 320 176l0 112c0 35.3 28.7 64 64 64l32 0 0 128c0 17.7 14.3 32 32 32s32-14.3 32-32l0-448c0-17.7-14.3-32-32-32z"></path></svg></i>
-                                <p class="font-medium">No meals logged today</p>
-                                <p class="text-sm">
-                                    Add meals from the Meals page or scan products
-                                </p>
-                            </div>`;
-        }
-        const itemsNumber =
-            this.logData.meals.length + this.logData.products.length;
-        document.getElementById("logged-items-count").innerHTML =
-            `Logged Items (${itemsNumber})
-        `;
-        document.getElementById("items-count").innerHTML =
-            `${itemsNumber} items`;
     }
 }
